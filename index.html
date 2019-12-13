@@ -7,26 +7,27 @@
 				margin: 0px auto;
 				border: 10px #333 solid;
 			} */
+			body {
+			margin: 0;
+			}
 			#container {
 				width: 100%;
+				margin: 0;
+				padding: 0;
 			}
 			#videoElement {
 				background-color: #666;
-				padding-left: 0;
-				padding-right: 0;
-				margin-left: auto;
-				margin-right: auto;
-				display: block;
-				position: relative;
-				top: -375px;  /* the value is arguable */
+				position: fixed;
+  				right: 0;
+  				bottom: 0;
+				width: 100%;
 				z-index: -100;
 			}
 			#overlay {
-				padding-left: 0;
-				padding-right: 0;
-				margin-left: auto;
-				margin-right: auto;
-				display: block;
+				position: fixed;
+				right: 0;
+  				bottom: 0;
+  				width: 100%;
 			}
 		</style>
 
@@ -34,16 +35,15 @@
 	<body>
 		<div id="container">
 			<canvas id="overlay"></canvas>
-			<video autoplay="true" id="videoElement" width=500 height=375>
+			<video autoplay="true" id="videoElement">
 			
 			</video>
 		</div>
 
 		<script>
 			// parameter
-			update_alpha = 0.6;
-
-
+			update_alpha = 0.5;
+			
 			async function load_model(model_dir) {
 				await faceapi.nets.tinyFaceDetector.loadFromUri(document.URL.substr(0,document.URL.lastIndexOf('/')) + '/' + model_dir);
 			}
@@ -79,6 +79,11 @@
 			// 3. detect face
 			const input = video;
 
+			input.addEventListener("playing", function() {
+				console.log(this.videoWidth)
+			
+			const displaySize = { width: this.videoWidth, height: this.videoHeight };
+
 			// TODO: change this to input Form
 			base_images = []
 			image_locs = []  // image location in the image
@@ -90,7 +95,7 @@
 					height : 0
 				};
 
-			for (let i=0; i < 30; i++) {
+			for (let i=0; i < 10; i++) {
 				base_image = new Image();
 				base_image.src = 'donald_trump.png';
 
@@ -106,11 +111,10 @@
 				// @param canvas target canvas to draw
 
 				/* Display detected face bounding boxes */
-				const detections = await faceapi.detectAllFaces(input, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.3 }))
+				const detections = await faceapi.detectAllFaces(input, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.3 }))
 
 				// resize the detected boxes in case your displayed image has a different size than the original
 				const resizedDetections = faceapi.resizeResults(detections, displaySize)
-
 
 				// reset canvas
 				const canvasContext = canvas.getContext('2d');
@@ -122,8 +126,8 @@
 				resizedDetections.forEach(function(detection, index_detection) {
 					detection_size = detection.box;
 
-					new_x = detection_size.x-5
-					new_y = detection_size.y-60
+					new_x = detection_size.x-7
+					new_y = detection_size.y-55
 					new_width = detection_size.width+10
 					new_height = detection_size.height+50
 
@@ -142,7 +146,6 @@
 			
 
 			// 4. display detection results
-			const displaySize = { width: input.width, height: input.height }
 			// resize the overlay canvas to the input dimensions
 			const canvas = document.getElementById('overlay')
 
@@ -153,7 +156,7 @@
 				detectFace(canvas); 
 
 				}, 100);
-
+			})
 
 		</script>
 	</body>
