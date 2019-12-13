@@ -1,0 +1,160 @@
+<html>
+	<head>
+		<script src="face-api.js"></script>
+
+		<style>
+			/* #container {
+				margin: 0px auto;
+				border: 10px #333 solid;
+			} */
+			#container {
+				width: 100%;
+			}
+			#videoElement {
+				background-color: #666;
+				padding-left: 0;
+				padding-right: 0;
+				margin-left: auto;
+				margin-right: auto;
+				display: block;
+				position: relative;
+				top: -375px;  /* the value is arguable */
+				z-index: -100;
+			}
+			#overlay {
+				padding-left: 0;
+				padding-right: 0;
+				margin-left: auto;
+				margin-right: auto;
+				display: block;
+			}
+		</style>
+
+	</head>
+	<body>
+		<div id="container">
+			<canvas id="overlay"></canvas>
+			<video autoplay="true" id="videoElement" width=500 height=375>
+			
+			</video>
+		</div>
+
+		<script>
+			// parameter
+			update_alpha = 0.6;
+
+
+			async function load_model(model_dir) {
+				await faceapi.nets.tinyFaceDetector.loadFromUri(document.URL.substr(0,document.URL.lastIndexOf('/')) + '/' + model_dir);
+			}
+
+			// 1. load the model
+			load_model("models");
+
+			// 2. handle the webcam
+			var video = document.querySelector("#videoElement");
+
+			if (navigator.mediaDevices.getUserMedia) {
+				navigator.mediaDevices.getUserMedia({ video: true })
+				.then(function (stream) {
+					video.srcObject = stream;
+				})
+				.catch(function (err0r) {
+					console.log("Something went wrong!");
+				});
+			}
+
+			function stop(e) {
+				var stream = video.srcObject;
+				var tracks = stream.getTracks();
+
+				for (var i = 0; i < tracks.length; i++) {
+					var track = tracks[i];
+					track.stop();
+				}
+
+				video.srcObject = null;
+			}
+
+			// 3. detect face
+			const input = video;
+
+			// TODO: change this to input Form
+			base_images = []
+			image_locs = []  // image location in the image
+
+			image_loc = {
+					x : 0,
+					y : 0,
+					width : 0,
+					height : 0
+				};
+
+			for (let i=0; i < 30; i++) {
+				base_image = new Image();
+				base_image.src = 'donald_trump.png';
+
+				// pushes all of them
+				base_images.push(base_image)
+				image_locs.push(image_loc)
+			}
+
+
+			var update_alpha_func = function (newval, oldval) {return (oldval != 0) ? (update_alpha) * newval + (1 - update_alpha) * oldval : newval};
+
+			async function detectFace(canvas) {
+				// @param canvas target canvas to draw
+
+				/* Display detected face bounding boxes */
+				const detections = await faceapi.detectAllFaces(input, new faceapi.TinyFaceDetectorOptions())
+
+				// resize the detected boxes in case your displayed image has a different size than the original
+				const resizedDetections = faceapi.resizeResults(detections, displaySize)
+
+
+				// reset canvas
+				const canvasContext = canvas.getContext('2d');
+				canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+				// draw detections into the canvas
+				// faceapi.draw.drawDetections(canvas, resizedDetections)
+
+				// draw donald trump
+				resizedDetections.forEach(function(detection, index_detection) {
+					detection_size = detection.box;
+
+					new_x = detection_size.x-5
+					new_y = detection_size.y-60
+					new_width = detection_size.width+10
+					new_height = detection_size.height+50
+
+					image_loc = image_locs[index_detection]
+					image_loc.x = update_alpha_func(new_x, image_loc.x);
+					image_loc.y = update_alpha_func(new_y, image_loc.y);
+					image_loc.width = update_alpha_func(new_width, image_loc.width);
+					image_loc.height = update_alpha_func(new_height, image_loc.height);
+
+					image_locs[index_detection] = image_loc
+
+					canvasContext.drawImage(base_images[index_detection], image_loc.x, image_loc.y, image_loc.width, image_loc.height);
+					// canvasContext.drawImage(base_images[index_detection], new_x, new_y, new_width, new_height);
+				});
+			}
+			
+
+			// 4. display detection results
+			const displaySize = { width: input.width, height: input.height }
+			// resize the overlay canvas to the input dimensions
+			const canvas = document.getElementById('overlay')
+
+			faceapi.matchDimensions(canvas, displaySize)
+
+			setInterval(function(){   // iterate forever to display the detection
+
+				detectFace(canvas); 
+
+				}, 50);
+
+
+		</script>
+	</body>
+</html>
