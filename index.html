@@ -137,11 +137,11 @@
 
 					index_image_loc = 0;
 					image_loc = image_locs[index_image_loc];
-					nearest_dist = eucledian_func(image_loc.x, image_loc.y, image_loc.width, image_loc.height);
+					nearest_dist = eucledian_func(image_loc.x-new_x, image_loc.y-new_y, image_loc.width-new_width, image_loc.height-new_height);
 
 					for (var i = 1; i < max_boxes; i++) {
 						temp_image_loc = image_locs[i];
-						temp_nearest_dist = eucledian_func(temp_image_loc.x, temp_image_loc.y, temp_image_loc.width, temp_image_loc.height);
+						temp_nearest_dist = eucledian_func(temp_image_loc.x-new_x, temp_image_loc.y-new_y, temp_image_loc.width-new_width, temp_image_loc.height-new_height);
 
 						if (temp_nearest_dist < nearest_dist) {
 							index_image_loc = i;
@@ -157,7 +157,7 @@
 
 					image_locs[index_image_loc] = image_loc
 
-					canvasContext.drawImage(base_images[index_detection], image_loc.x, image_loc.y, image_loc.width, image_loc.height);
+					canvasContext.drawImage(base_images[index_image_loc], image_loc.x, image_loc.y, image_loc.width, image_loc.height);
 					// canvasContext.drawImage(base_images[index_detection], new_x, new_y, new_width, new_height);
 				});
 			}
