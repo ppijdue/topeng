@@ -56,7 +56,7 @@
 
 			if (navigator.mediaDevices.getUserMedia) {
 				const videoConstraints = {
-					facingMode: "user"
+					facingMode: "environment"
 				}
 				navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false })
 				.then(function (stream) {
