@@ -43,7 +43,8 @@
 		<script>
 			// parameter
 			update_alpha = 0.5;
-			
+			max_boxes = 10;
+
 			async function load_model(model_dir) {
 				await faceapi.nets.tinyFaceDetector.loadFromUri(document.URL.substr(0,document.URL.lastIndexOf('/')) + '/' + model_dir);
 			}
@@ -90,7 +91,7 @@
 			base_images = []
 			image_locs = []  // image location in the image
 
-			for (let i=0; i < 10; i++) {
+			for (let i=0; i < max_boxes; i++) {
 				base_image = new Image();
 				base_image.src = 'donald_trump.png';
 
@@ -108,6 +109,7 @@
 
 
 			var update_alpha_func = function (newval, oldval) {return (oldval != 0) ? (update_alpha) * newval + (1 - update_alpha) * oldval : newval};
+			var eucledian_func = function (x, y, width, height) { return Math.sqrt(x**2 + y**2 + width**2 + height**2) }
 
 			async function detectFace(canvas) {
 				// @param canvas target canvas to draw
@@ -133,13 +135,27 @@
 					new_width = detection_size.width+10
 					new_height = detection_size.height+50
 
-					image_loc = image_locs[index_detection]
+					index_image_loc = 0;
+					image_loc = image_locs[index_image_loc];
+					nearest_dist = eucledian_func(image_loc.x, image_loc.y, image_loc.width, image_loc.height);
+
+					for (var i = 1; i < max_boxes; i++) {
+						temp_image_loc = image_locs[i];
+						temp_nearest_dist = eucledian_func(temp_image_loc.x, temp_image_loc.y, temp_image_loc.width, temp_image_loc.height);
+
+						if (temp_nearest_dist < nearest_dist) {
+							index_image_loc = i;
+							nearest_dist = temp_nearest_dist;
+						}
+					}
+
+					image_loc = image_locs[index_image_loc];
 					image_loc.x = update_alpha_func(new_x, image_loc.x);
 					image_loc.y = update_alpha_func(new_y, image_loc.y);
 					image_loc.width = update_alpha_func(new_width, image_loc.width);
 					image_loc.height = update_alpha_func(new_height, image_loc.height);
 
-					image_locs[index_detection] = image_loc
+					image_locs[index_image_loc] = image_loc
 
 					canvasContext.drawImage(base_images[index_detection], image_loc.x, image_loc.y, image_loc.width, image_loc.height);
 					// canvasContext.drawImage(base_images[index_detection], new_x, new_y, new_width, new_height);
