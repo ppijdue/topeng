@@ -116,7 +116,7 @@
 				// @param canvas target canvas to draw
 
 				/* Display detected face bounding boxes */
-				const detections = await faceapi.detectAllFaces(input, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.4 }))
+				const detections = await faceapi.detectAllFaces(input, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.4 }))
 
 				// resize the detected boxes in case your displayed image has a different size than the original
 				const resizedDetections = faceapi.resizeResults(detections, displaySize)
