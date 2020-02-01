@@ -43,7 +43,8 @@
 		<script>
 			// parameter
 			update_alpha = 0.5;
-			max_boxes = 3;
+			max_boxes = 2;
+			FOTO_MASK = 'wayang.png';
 
 			async function load_model(model_dir) {
 				await faceapi.nets.tinyFaceDetector.loadFromUri(document.URL.substr(0,document.URL.lastIndexOf('/')) + '/' + model_dir);
@@ -93,7 +94,7 @@
 
 			for (let i=0; i < max_boxes; i++) {
 				base_image = new Image();
-				base_image.src = 'donald_trump.png';
+				base_image.src = FOTO_MASK;
 
 				image_loc = {
 					x : this.videoWidth/2,
@@ -115,7 +116,7 @@
 				// @param canvas target canvas to draw
 
 				/* Display detected face bounding boxes */
-				const detections = await faceapi.detectAllFaces(input, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.3 }))
+				const detections = await faceapi.detectAllFaces(input, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.4 }))
 
 				// resize the detected boxes in case your displayed image has a different size than the original
 				const resizedDetections = faceapi.resizeResults(detections, displaySize)
@@ -131,10 +132,10 @@
 				resizedDetections.forEach(function(detection, index_detection) {
 					detection_size = detection.box;
 
-					new_x = detection_size.x-7
-					new_y = detection_size.y-55
-					new_width = detection_size.width+10
-					new_height = detection_size.height+50
+					new_x = detection_size.x-5
+					new_y = detection_size.y-60
+					new_width = detection_size.width+30
+					new_height = detection_size.height+80
 
 					var index_image_loc;
 					var nearest_dist = displaySize.width * 4;
